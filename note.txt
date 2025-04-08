@@ -1,0 +1,128 @@
+#code 
+Source: https://github.com/dinesh776/ATS-Analyzer
+Lagu : https://youtu.be/t5QaQyLcZlY?si=M7MeG_Fv5WcpdnAo
+
+---
+## Briefing
+
+### Poin Utama:
+
+- Proyek ini dirancang sebagai aplikasi web dengan backend Spring Boot dan frontend statis HTML/CSS/JavaScript, menggunakan Spring AI untuk analisis resume.
+    
+- Tidak ada lapisan persistensi karena data diproses secara real-time tanpa penyimpanan permanen.
+    
+- Lapisan layanan menangani analisis resume menggunakan AI, sedangkan lapisan presentasi mengelola interaksi pengguna melalui API.
+    
+
+Desain Proyek:  
+Proyek ini adalah aplikasi web untuk menyaring resume, di mana pengguna mengunggah resume dan deskripsi pekerjaan (opsional), lalu backend menggunakan AI untuk menghasilkan skor ATS, kekuatan, kelemahan, dan rekomendasi. Frontend statis memungkinkan interaksi pengguna, sementara backend menangani logika dengan Spring AI.
+
+Pengaturan Proyek:  
+Mulai dengan Spring Initializer, pilih dependensi seperti spring-web dan spring-ai, lalu atur struktur direktori untuk kode Java dan file statis. Konfigurasikan application.properties untuk kredensial AI dan pengaturan lainnya.
+
+Lapisan Persistensi:  
+Tidak diperlukan database karena aplikasi memproses data secara langsung tanpa menyimpan, sehingga tidak ada entitas atau repositori.
+
+Lapisan Layanan:  
+Buat layanan (misalnya, ResumeAnalysisService) untuk memproses resume dan deskripsi pekerjaan menggunakan Spring AI, menghasilkan analisis seperti skor ATS dan rekomendasi.
+
+Lapisan Presentasi:  
+Buat controller (misalnya, ResumeController) untuk menangani permintaan HTTP, seperti mengunggah file dan mengembalikan hasil analisis dalam format JSON, yang diakses oleh frontend melalui panggilan AJAX.
+
+---
+
+
+### Latar Belakang dan Analisis
+
+Proyek ini diinspirasikan oleh repositori [ATS-Analyzer](https://github.com/dinesh776/ATS-Analyzer), yang merupakan alat analisis resume yang mengevaluasi resume terhadap deskripsi pekerjaan untuk menghasilkan skor ATS, mengidentifikasi kekuatan dan kelemahan, serta memberikan rekomendasi. Berdasarkan deskripsi, proyek ini menggunakan Spring Boot untuk backend dan Spring AI untuk integrasi AI, dengan frontend berbasis HTML, CSS, JavaScript, dan Bootstrap. Analisis dilakukan dengan memeriksa struktur file dan memperkirakan fungsionalitas berdasarkan pola proyek Spring Boot standar.
+
+#### 1. Desain Proyek
+
+Proyek ini dirancang sebagai aplikasi web dengan arsitektur frontend-backend terpisah. Frontend adalah halaman statis yang memungkinkan pengguna mengunggah resume dan deskripsi pekerjaan (opsional), sementara backend menangani logika analisis menggunakan AI. Integrasi AI memungkinkan pemrosesan teks untuk menghasilkan skor ATS, mengidentifikasi kekuatan dan kelemahan, serta memberikan rekomendasi perbaikan. Desain ini cocok untuk aplikasi real-time tanpa kebutuhan penyimpanan data permanen.
+
+#### 2. Pengaturan Proyek
+
+Pengaturan proyek dimulai dengan membuat proyek baru menggunakan Spring Initializer. Langkah-langkahnya meliputi:
+
+- Pilih dependensi seperti spring-web untuk kemampuan web, spring-ai untuk integrasi AI, dan dependensi standar seperti spring-core dan spring-beans.
+    
+- Pastikan proyek menggunakan Java 21 atau lebih tinggi, sesuai kebutuhan repositori referensi.
+    
+- Struktur direktori standar Spring Boot mencakup:
+    
+    - src/main/java/ untuk kode sumber Java.
+        
+    - src/main/resources/static/ untuk file frontend (HTML, CSS, JS).
+        
+    - src/main/resources/ untuk file konfigurasi seperti application.properties.
+        
+- Konfigurasikan application.properties untuk menyimpan pengaturan seperti kredensial API AI (misalnya, URL dan kunci untuk model OpenAI) dan port aplikasi (default 8080).
+    
+- Proyek juga mendukung opsi Docker untuk deployment, dengan perintah seperti docker build -t ats-analyzer . dan docker run -p 8080:8080 ats-analyzer, meskipun ini opsional untuk pengaturan awal.
+    
+
+Berdasarkan analisis, repositori memiliki file pom.xml (113 baris, 3.99 KB), yang menunjukkan penggunaan Maven untuk manajemen dependensi, dengan kemungkinan termasuk dependensi untuk Spring AI dan web.
+
+#### 3. Lapisan Persistensi
+
+Lapisan persistensi biasanya mencakup entitas, DTO, dan repositori untuk menyimpan data. Namun, berdasarkan analisis, proyek ini tidak memerlukan penyimpanan permanen karena fokusnya adalah pemrosesan real-time resume dan deskripsi pekerjaan. Tidak ada indikasi penggunaan database dalam file konfigurasi seperti application.properties (13 baris, 550 bytes), yang lebih mungkin berisi pengaturan AI daripada koneksi database. Oleh karena itu:
+
+- Tidak ada kelas entitas dengan anotasi @Entity.
+    
+- Tidak ada repositori dengan anotasi seperti @Repository.
+    
+- Semua data diproses di memori selama runtime, tanpa kebutuhan penyimpanan jangka panjang.
+    
+
+#### 4. Lapisan Layanan
+
+Lapisan layanan menangani logika bisnis, khususnya analisis resume menggunakan AI. Berdasarkan fungsionalitas yang diharapkan:
+
+- Buat kelas layanan, misalnya ResumeAnalysisService, dengan anotasi @Service.
+    
+- Layanan ini bertugas:
+    
+    - Membaca dan mengurai file resume (kemungkinan dalam format PDF atau teks).
+        
+    - Opsional, mengurai file deskripsi pekerjaan jika disediakan.
+        
+    - Menggunakan Spring AI untuk mengirim teks ke model AI (misalnya, OpenAI) dan menerima respons.
+        
+    - Memproses respons AI untuk mengekstrak informasi seperti skor ATS, kekuatan, kelemahan, dan rekomendasi.
+        
+- Konfigurasi Spring AI kemungkinan dilakukan melalui bean atau pengaturan di application.properties, memastikan koneksi ke model AI berjalan lancar.
+    
+- Layanan ini harus menangani pengecualian, seperti kesalahan koneksi API atau format file yang tidak valid.
+    
+
+Analisis ini didasarkan pada deskripsi proyek yang menunjukkan penggunaan Spring AI untuk analisis, dengan asumsi layanan ini menjadi inti logika bisnis.
+
+#### 5. Lapisan Presentasi
+
+Lapisan presentasi mencakup controller untuk menangani permintaan HTTP dan berinteraksi dengan frontend. Berdasarkan struktur proyek:
+
+- Buat controller, misalnya ResumeController, dengan anotasi @RestController atau @Controller.
+    
+- Endpoints yang diperlukan meliputi:
+    
+    - GET / untuk menyajikan halaman utama (kemungkinan index.html dari folder statis).
+        
+    - POST /analyze untuk menangani unggahan file resume dan deskripsi pekerjaan, menggunakan multipart form data. Controller ini akan memanggil ResumeAnalysisService untuk memproses data dan mengembalikan hasil dalam format JSON (misalnya, objek dengan skor ATS, kekuatan, kelemahan, dan rekomendasi).
+        
+- Frontend, yang terdiri dari file HTML, CSS, dan JavaScript di src/main/resources/static/, akan menggunakan AJAX untuk berkomunikasi dengan endpoint ini, mengunggah file dan menampilkan hasil.
+    
+- Analisis menunjukkan adanya folder static (dengan URL commit history /dinesh776/ATS-Analyzer/commits/main/src/main/resources/static), yang kemungkinan berisi file seperti index.html, meskipun konten spesifik tidak dapat diakses. Tidak ada indikasi penggunaan templating seperti Thymeleaf, mendukung asumsi frontend statis.
+    
+
+Tabel Ringkasan Struktur Proyek
+
+Berikut adalah tabel yang merangkum estimasi struktur file berdasarkan analisis:
+
+|Lapisan|File/Folder|Estimasi Fungsionalitas|
+|---|---|---|
+|Pengaturan Proyek|pom.xml|Mengelola dependensi, termasuk Spring AI dan web.|
+||application.properties|Konfigurasi AI, port, dan pengaturan aplikasi.|
+|Persistensi|Tidak ada|Tidak diperlukan, pemrosesan real-time tanpa database.|
+|Layanan|ResumeAnalysisService.java|Memproses resume dan deskripsi pekerjaan menggunakan AI.|
+|Presentasi|ResumeController.java|Menangani permintaan HTTP untuk unggahan dan analisis.|
+||static/index.html<br><br>,<br><br>static/css/<br><br>,<br><br>static/js/|Frontend untuk interaksi pengguna dan tampilan hasil.|
