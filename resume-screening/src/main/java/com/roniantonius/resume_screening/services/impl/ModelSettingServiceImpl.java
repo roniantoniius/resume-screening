@@ -19,7 +19,7 @@ public class ModelSettingServiceImpl implements ModelSettingService {
 
     @Override
     public void save(ModelSettingEntity modelSetting) {
-        modelSetting.setId(1); // idk why this method wont work
+        modelSetting.setId(1); // idk why this method wont work in intelij
         modelSettingRepository.save(modelSetting);
     }
 }

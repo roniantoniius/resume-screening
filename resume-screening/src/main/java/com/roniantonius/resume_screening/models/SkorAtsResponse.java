@@ -12,7 +12,6 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class SkorAtsResponse {
     private int skorReview;
     private String rekomendasi;
