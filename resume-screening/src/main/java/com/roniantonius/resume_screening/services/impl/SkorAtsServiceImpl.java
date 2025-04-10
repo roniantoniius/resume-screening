@@ -1,5 +1,6 @@
 package com.roniantonius.resume_screening.services.impl;
 
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 import com.roniantonius.resume_screening.models.ModelSettingEntity;
@@ -9,6 +10,8 @@ import com.roniantonius.resume_screening.services.SkorAtsService;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -76,12 +79,115 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 			// fungsionalitas berkomunikasi dengan ChatClient melalui sistem prompt
 			ModelSettingEntity modelSetting = modelSettingServiceImpl.getModelSettings();
 			// later, i am sleepy
+			if (AiChatServiceImpl.getChatClient() == null && modelSetting!=null) {
+				AiChatServiceImpl.getInstance(modelSetting);
+			}
+			
+			ChatClient chatClient = AiChatServiceImpl.getChatClient();
+			if(chatClient == null) {
+				return buatSkorError("Servis AI belum dikonfigurasi, perhatikan API AI lebih lanjut");
+			}
+			
+			String promptUserTemplate;
+			if (deksripsiPekerjaan != null && !deksripsiPekerjaan.isEmpty()) {
+				promptUserTemplate = PROMPT_USER_PEKERJAAN;
+				promptUserTemplate = promptUserTemplate.replace("{deskripsiPekerjaan}", deksripsiPekerjaan);
+			} else {
+				promptUserTemplate = PROMPT_USER_TANPA_PEKERJAAN;
+			}
+			
+			promptUserTemplate.replace("{teksResume}", teksResume);
+			
+			String promptUserFinal = promptUserTemplate;
+			String konten = chatClient.prompt()
+					.user(pengguna -> pengguna.text(promptUserFinal))
+					.system(SYSTEM_PROMPT)
+					.stream()
+					.content()
+					.collectList()
+					.map(daftar -> String.join("" , daftar))
+					.block();
+			return olahRespons(konten);
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 			return buatSkorError("Gagal menganalisis resume, Tolong coba layanan ini kembali nanti");
 		}
 	}
 	
+	
+	private SkorAtsResponse olahRespons(String kontenJsonResponse) {
+		// menggunakan string manip to return an Ats skor reponse obj
+		try {
+			// but obviously we should json parser built in like jackson
+			// why? cuz its not that efficient, we need to convert into string first, more object
+			int skor = ekstrakNilaiInt(kontenJsonResponse, "skorReview");
+			
+			String rekomendasi = ekstrakRekomendasi(kontenJsonResponse, "rekomendasi");
+			
+			List<String> kekuatans = ekstrakListString(kontenJsonResponse, "daftarKekuatan");
+			List<String> kelemahans = ekstrakListString(kontenJsonResponse, "daftarKelemahan");
+			
+			Map<String, Integer> skorKategori = new HashMap<>();
+			skorKategori.put("format", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "format"));
+			skorKategori.put("kataKunci", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "kataKunci"));
+			skorKategori.put("pencapaian", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "pencapaian"));
+			skorKategori.put("skills", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "skills"));
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			return buatSkorError("Tidak bisa mengolah hasil dari resume, tolong coba lain waktu");
+		}
+	}
+	
+	private int ekstrakNilaiInt(String jsonResponse, String keyVar) {
+		String pola = "\"" + keyVar + "\"\\s*:\\s*(\\d+)";
+		Pattern polaRegex = Pattern.compile(pola);
+		Matcher matcher = polaRegex.matcher(jsonResponse);
+		if (matcher.find()) {
+			return Integer.parseInt(matcher.group(1)); // ubah str dari var ke int
+		}
+		return 0;
+	}
+	
+	private String ekstrakRekomendasi(String jsonResponse, String keyVar) {
+		String pola = "\"" + keyVar + "\"\\s*:\\s*\"([^\"]*)\"";
+		Pattern polaRegex = Pattern.compile(pola);
+		Matcher matcher = polaRegex.matcher(jsonResponse);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return "";
+	}
+	
+	private List<String> ekstrakListString(String jsonResponse, String keyVar) {
+		List<String> hasils = new ArrayList<>();
+		String polaDaftar = "\"" + keyVar + "\"\\s*:\\s*\\[(.*?)\\]";
+		Pattern polaRegex = Pattern.compile(polaDaftar, Pattern.DOTALL);
+		Matcher matcherRegex = polaRegex.matcher(jsonResponse);
+		
+		if (matcherRegex.find()) {
+			String daftarKonten = matcherRegex.group(1);
+			String polaKontenRegex = "\"([^\"]*)\"";
+			Pattern pola = Pattern.compile(polaKontenRegex);
+			Matcher matcher = pola.matcher(daftarKonten);
+			
+			while (matcher.find()) {
+				hasils.add(matcher.group(1));
+			}
+		}
+		return hasils;
+	}
+	
+	private int ekstrakIntLapisanOutput(String jsonResponse, String keyParent, String keyChild) {
+		String polaBerkelanjutan = "\"" + keyParent + "\"\\s*:\\s*\\{[^}]*\"" + keyChild + "\"\\s*:\\s*(\\d+)";
+		Pattern pola = Pattern.compile(polaBerkelanjutan);
+		Matcher matcher = pola.matcher(jsonResponse);
+		if (matcher.find()) {
+			return Integer.parseInt(matcher.group(1));
+		}
+		return 0;
+	}
 	
 	public static SkorAtsResponse buatSkorError(String pesanError) {
 		Map<String, Integer> skorDefault = new HashMap<>();

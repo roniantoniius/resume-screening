@@ -9,9 +9,13 @@ import org.springframework.stereotype.Service;
 import com.roniantonius.resume_screening.models.ModelSettingEntity;
 import com.roniantonius.resume_screening.services.AiChatService;
 
+import lombok.Getter;
+
 
 @Service
 public class AiChatServiceImpl implements AiChatService{
+	
+	@Getter
 	private static ChatClient chatClient;
 	private static AiChatServiceImpl aiChatService;
 
@@ -29,7 +33,17 @@ public class AiChatServiceImpl implements AiChatService{
 	@Override
 	public String test() {
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			if (chatClient == null) {
+				return "Error: ChatClient bellum terkonfigurasi / null, tolong cantmkan API atau pengaturan lainnya";
+			}
+			
+			chatClient.prompt("Halo apa kabar").call().chatResponse();
+			return "Sukses";
+		} catch (Exception e) {
+			// TODO: handle exception
+			return "Error: " + e.getMessage();
+		}
 	}
 	
 	private ChatClient updateAiChat(ModelSettingEntity modelSetting) {
