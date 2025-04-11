@@ -134,6 +134,15 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 			skorKategori.put("pencapaian", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "pencapaian"));
 			skorKategori.put("skills", ekstrakIntLapisanOutput(kontenJsonResponse, "skorKategori", "skills"));
 			
+			// return build
+			return SkorAtsResponse.builder()
+					.skorReview(skor)
+					.rekomendasi(rekomendasi)
+					.daftarKekuatan(kekuatans)
+					.daftarKelemahan(kelemahans)
+					.skorKategori(skorKategori)
+					.build();
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 			return buatSkorError("Tidak bisa mengolah hasil dari resume, tolong coba lain waktu");
