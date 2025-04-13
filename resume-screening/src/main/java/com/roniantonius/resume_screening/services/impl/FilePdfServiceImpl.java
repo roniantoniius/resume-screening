@@ -10,10 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.roniantonius.resume_screening.services.FilePdfService;
 
-import groovy.util.logging.Slf4j;
-
 @Service
-@Slf4j
 public class FilePdfServiceImpl implements FilePdfService{
 	
 	// functionality to extract document into string that contain several rows of string

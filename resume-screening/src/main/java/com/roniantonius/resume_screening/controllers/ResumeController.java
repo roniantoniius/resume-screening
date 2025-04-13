@@ -19,7 +19,9 @@ import com.roniantonius.resume_screening.services.impl.ModelSettingServiceImpl;
 import com.roniantonius.resume_screening.services.impl.SkorAtsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "/api/v1/resume")
 @RequiredArgsConstructor
@@ -47,9 +49,11 @@ public class ResumeController {
 			return ResponseEntity.ok(skorAtsResponse);
 		} catch (IOException e) {
 			// TODO: handle exception
+			log.error("Error ketika proses PDF: ", e);
 			return ResponseEntity.badRequest().build();
 		} catch (IllegalArgumentException e) {
 			// TODO: handle exception
+			log.error("File yang disubmit tidak valid: ", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}
@@ -70,9 +74,11 @@ public class ResumeController {
 			return ResponseEntity.ok(skorAtsResponse);
 		} catch (IOException e) {
 			// TODO: handle exception
+			log.error("Error ketika proses PDF: ", e);
 			return ResponseEntity.badRequest().build();
 		} catch (IllegalArgumentException e) {
 			// TODO: handle exception
+			log.error("File yang disubmit tidak valid: ", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}

@@ -7,7 +7,7 @@ import com.roniantonius.resume_screening.models.ModelSettingEntity;
 import com.roniantonius.resume_screening.models.SkorAtsResponse;
 import com.roniantonius.resume_screening.services.SkorAtsService;
 
-import groovy.util.logging.Slf4j;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -97,6 +97,7 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 			}
 			
 			promptUserTemplate.replace("{teksResume}", teksResume);
+			log.info("Sedang mengirim resume supaya di analisis oleh HR");
 			
 			String promptUserFinal = promptUserTemplate;
 			String konten = chatClient.prompt()
@@ -107,8 +108,9 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 					.collectList()
 					.map(daftar -> String.join("" , daftar))
 					.block();
-			return olahRespons(konten);
+			log.debug("Respons HR: {}", konten);
 			
+			return olahRespons(konten);
 		} catch (Exception e) {
 			// TODO: handle exception
 			return buatSkorError("Gagal menganalisis resume, Tolong coba layanan ini kembali nanti");
@@ -145,6 +147,7 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 			
 		} catch (Exception e) {
 			// TODO: handle exception
+			log.error("Error dalam parsing atau mengolah response", e);
 			return buatSkorError("Tidak bisa mengolah hasil dari resume, tolong coba lain waktu");
 		}
 	}
@@ -209,7 +212,7 @@ public class SkorAtsServiceImpl implements SkorAtsService{
 				.skorReview(0)
 				.rekomendasi(pesanError)
 				.daftarKekuatan(Collections.emptyList())
-				.daftarKelemahan(Collections.singletonList("Analisis terjadi error"))
+				.daftarKelemahan(Collections.singletonList("Analisis terjadi error")) // got an error here
 				.skorKategori(skorDefault)
 				.build();
 	}
